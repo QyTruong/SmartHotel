@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from django.conf.global_settings import AUTH_USER_MODEL
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+MEDIA_ROOT = '%s/hotel/static/' % BASE_DIR
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -37,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "smarthotel.apps.SmarthotelConfig",
+    "smarthotel.apps.SmartHotelConfig",
     "ckeditor",
     "ckeditor_uploader",
     "rest_framework",
@@ -45,12 +47,16 @@ INSTALLED_APPS = [
     "oauth2_provider",
 ]
 
+
+
 import cloudinary.api
 cloudinary.config(
   	cloud_name = "dufzeox2u",
   	api_key = "981122581416944",
   	api_secret = "xbdkpX5KXY3T0K-bULf5tV37OD0"
 )
+
+CKEDITOR_UPLOAD_PATH = "images/ckeditors/"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -100,6 +106,13 @@ pymysql.install_as_MySQLdb()
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+AUTH_USER_MODEL = "smarthotel.User"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -135,3 +148,6 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CLIENT_ID="ZGxDioY1C6MAgclGDglxOBVz3L1SaY7m4iXBvMDE"
+CLIENT_SECRET="JZUt5KgIjUMKvHim3acH57NQfLPJZ2FDogX858d6XUYlEfUkvtvT0A0sEtF4hXIgrr3SXTRq6byUNUOwl5a56zEhO6RXt764DVXlkD87lil1Rp5nYzw6L0TWpWLh9aI2"
