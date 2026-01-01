@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 from django.conf.global_settings import AUTH_USER_MODEL
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()
 
 MEDIA_ROOT = '%s/hotel/static/' % BASE_DIR
 
@@ -52,8 +54,8 @@ INSTALLED_APPS = [
 import cloudinary.api
 cloudinary.config(
   	cloud_name = "dufzeox2u",
-  	api_key = "981122581416944",
-  	api_secret = "xbdkpX5KXY3T0K-bULf5tV37OD0"
+  	api_key = os.getenv("API_CLOUDINARY_KEY"),
+  	api_secret = os.getenv("API_CLOUDINARY_SECRET")
 )
 
 CKEDITOR_UPLOAD_PATH = "images/ckeditors/"
@@ -96,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smarthoteldb',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': os.getenv("DATABASE_PASSWORD"),
         'HOST': ''
     }
 }
@@ -148,6 +150,3 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-CLIENT_ID="ZGxDioY1C6MAgclGDglxOBVz3L1SaY7m4iXBvMDE"
-CLIENT_SECRET="JZUt5KgIjUMKvHim3acH57NQfLPJZ2FDogX858d6XUYlEfUkvtvT0A0sEtF4hXIgrr3SXTRq6byUNUOwl5a56zEhO6RXt764DVXlkD87lil1Rp5nYzw6L0TWpWLh9aI2"
