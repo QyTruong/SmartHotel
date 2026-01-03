@@ -1,6 +1,3 @@
-echo "=== Cài đặt thư viện ==="
-pip install -r requirements.txt
-
 echo "=== Tạo superuser ==="
 export DJANGO_SUPERUSER_USERNAME=admin
 export DJANGO_SUPERUSER_EMAIL=truong.4725212@gmail.com
