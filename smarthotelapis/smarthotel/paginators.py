@@ -4,4 +4,4 @@ class RoomPagination(PageNumberPagination):
     page_size = 2
 
 class ServicePagination(PageNumberPagination):
-    page_size = 5
+    page_size = 2

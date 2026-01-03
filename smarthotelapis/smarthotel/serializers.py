@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from smarthotel.models import Room, Category, Service, User
+from smarthotel.models import Room, Category, Service, User, BookingRoom
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -49,6 +49,10 @@ class UserSerializer(serializers.ModelSerializer):
 
         return data
 
+class BookingRoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookingRoom
+        fields = ['id', 'price_per_night', 'start_date', 'end_date', 'check_in', 'check_out', 'room']
 
 
 
