@@ -2,11 +2,15 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
 
+class PaymentMethod(models.IntegerChoices):
+    CASH = 1
+    CARD = 2
+    WALLET = 3
+
 class User(AbstractUser):
     avatar = CloudinaryField(null=True)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-
 
 class BaseModel(models.Model):
     active = models.BooleanField(default=True)
@@ -43,12 +47,14 @@ class Service(BaseModel):
         return self.name
 
 class Receipt(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(decimal_places=2, max_digits=12, null=True)
+    payment_method = models.IntegerField(choices=PaymentMethod.choices, null=True)
 
 
 class BookingRoom(BaseModel):
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.RESTRICT)
     receipt = models.ForeignKey(Receipt, on_delete=models.RESTRICT,null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     price_per_night = models.DecimalField(decimal_places=2, max_digits=12)
     start_date = models.DateField(null=True)
@@ -58,8 +64,9 @@ class BookingRoom(BaseModel):
 
 
 class BookingService(BaseModel):
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.RESTRICT)
     receipt = models.ForeignKey(Receipt, on_delete=models.RESTRICT, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     quantity = models.IntegerField(default=0)
     unit_price = models.DecimalField(decimal_places=2, max_digits=12)
