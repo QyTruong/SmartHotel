@@ -16,6 +16,8 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'price']
 
 class RoomSerializer(ImageSerializer):
+    category = CategorySerializer()
+
     class Meta:
         model = Room
         fields = ['id', 'name', 'description', 'is_available', 'image', 'category']
