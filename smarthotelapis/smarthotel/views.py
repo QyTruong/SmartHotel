@@ -40,7 +40,7 @@ class RoomView(viewsets.ViewSet, generics.ListAPIView):
             queryset = queryset.filter(room_category__price__lte=max_price)
 
 
-        cate_id = self.request.query_params.get('category_id')
+        cate_id = self.request.query_params.get('room_category_id')
         if cate_id:
             queryset = queryset.filter(room_category_id=cate_id)
 
