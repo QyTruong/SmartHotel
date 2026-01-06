@@ -20,7 +20,7 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-class Category(models.Model):
+class RoomCategory(models.Model):
     name = models.CharField(max_length=50)
     price = models.DecimalField(decimal_places=2, max_digits=12)
 
@@ -31,8 +31,14 @@ class Room(BaseModel):
     name = models.CharField(max_length=50, null=False)
     image = CloudinaryField(null=True)
     description = models.TextField(null=True)
-    category = models.ForeignKey(Category, related_name='rooms', on_delete=models.CASCADE)
+    room_category = models.ForeignKey(RoomCategory, related_name='rooms', on_delete=models.CASCADE)
     is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+class ServiceCategory(models.Model):
+    name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
@@ -42,6 +48,7 @@ class Service(BaseModel):
     image = CloudinaryField(null=True)
     description = models.TextField(null=True)
     price = models.DecimalField(decimal_places=2, max_digits=12)
+    service_category = models.ForeignKey(ServiceCategory, related_name='services', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

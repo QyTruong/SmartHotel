@@ -1,15 +1,15 @@
 from rest_framework import viewsets, generics, parsers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Room, BookingRoom, User
+from .models import RoomCategory, Room, BookingRoom, User, Service
 from .paginators import ServicePagination, RoomPagination
-from .serializers import CategorySerializer, RoomSerializer, UserSerializer, BookingRoomSerializer
+from .serializers import RoomCategorySerializer, RoomSerializer, UserSerializer, BookingRoomSerializer, \
+    ServiceSerializer, ServiceCategorySerializer
 
 
-class CategoryView(viewsets.ViewSet, generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
+class RoomCategoryView(viewsets.ViewSet, generics.ListAPIView):
+    queryset = RoomCategory.objects.all()
+    serializer_class = RoomCategorySerializer
 
 class RoomView(viewsets.ViewSet, generics.ListAPIView):
     queryset = Room.objects.filter(active=True)
@@ -34,15 +34,15 @@ class RoomView(viewsets.ViewSet, generics.ListAPIView):
             queryset = queryset.exclude(id__in=booking)
 
         if min_price:
-            queryset = queryset.filter(category__price__gte=min_price)
+            queryset = queryset.filter(room_category__price__gte=min_price)
 
         if max_price:
-            queryset = queryset.filter(category__price__lte=max_price)
+            queryset = queryset.filter(room_category__price__lte=max_price)
 
 
         cate_id = self.request.query_params.get('category_id')
         if cate_id:
-            queryset = queryset.filter(category_id=cate_id)
+            queryset = queryset.filter(room_category_id=cate_id)
 
         return queryset
 
@@ -55,15 +55,19 @@ class RoomView(viewsets.ViewSet, generics.ListAPIView):
 
         return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
 
+class ServiceCategoryView(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceCategorySerializer
+
 class ServiceView(viewsets.ViewSet, generics.ListAPIView):
-    queryset = Room.objects.filter(active=True)
-    serializer_class = RoomSerializer
+    queryset = Service.objects.filter(active=True)
+    serializer_class = ServiceSerializer
     # permission_classes = [permissions.IsAuthenticated]
     pagination_class = ServicePagination
 
 
-
 class UserView(viewsets.ViewSet, generics.CreateAPIView):
+    queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [parsers.MultiPartParser]
 
@@ -77,6 +81,12 @@ class UserView(viewsets.ViewSet, generics.CreateAPIView):
             user.save()
 
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], url_path='booking-rooms', detail=True, permission_classes=[permissions.IsAuthenticated])
+    def get_booking_rooms(self, request, pk):
+        booking_rooms = self.get_object().bookingroom_set.filter(active=True)
+
+        return Response(BookingRoomSerializer(booking_rooms, many=True).data, status=status.HTTP_200_OK)
 
 
 class BookingRoomView(viewsets.ViewSet, generics.CreateAPIView):

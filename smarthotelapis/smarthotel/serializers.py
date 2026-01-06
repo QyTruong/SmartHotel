@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from smarthotel.models import Room, Category, Service, User, BookingRoom
+from smarthotel.models import Room, RoomCategory, Service, User, BookingRoom, ServiceCategory, BookingService
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -10,32 +10,44 @@ class ImageSerializer(serializers.ModelSerializer):
 
         return data
 
-class CategorySerializer(serializers.ModelSerializer):
+class RoomCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = RoomCategory
         fields = ['id', 'name', 'price']
 
 class RoomSerializer(ImageSerializer):
-    category = CategorySerializer()
+    room_category = RoomCategorySerializer()
 
     class Meta:
         model = Room
-        fields = ['id', 'name', 'description', 'is_available', 'image', 'category']
+        fields = ['id', 'name', 'description', 'is_available', 'image', 'room_category']
+
+class ServiceCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceCategory
+        fields = ['id', 'name']
 
 class ServiceSerializer(ImageSerializer):
+    service_category = ServiceCategorySerializer()
+
     class Meta:
         model = Service
-        fields = ['id', 'name', 'description','price', 'image']
+        fields = ['id', 'name', 'description','price', 'image', 'service_category']
 
 class UserSerializer(serializers.ModelSerializer):
+    groups = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username', 'password', 'avatar', 'email']
+        fields = ['id', 'first_name', 'last_name', 'username', 'password', 'avatar', 'email', 'groups']
         extra_kwargs = {
             'password': {
                 'write_only': True
             }
         }
+
+    def get_groups(self, user):
+        return list(user.groups.values_list('name', flat=True))
 
     def create(self, validated_data):
         user = User(**validated_data)
@@ -54,8 +66,11 @@ class UserSerializer(serializers.ModelSerializer):
 class BookingRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookingRoom
-        fields = ['id', 'price_per_night', 'start_date', 'end_date', 'check_in', 'check_out', 'room']
+        fields = ['id', 'user', 'room','price_per_night', 'start_date', 'end_date', 'check_in', 'check_out']
 
-
+class BookingServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookingService
+        fields = ['id', 'user', 'service', 'price']
 
 

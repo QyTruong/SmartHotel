@@ -3,8 +3,9 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 r = DefaultRouter()
-r.register('categories', views.CategoryView, basename='category')
+r.register('room-categories', views.RoomCategoryView, basename='room-category')
 r.register('rooms', views.RoomView, basename='room')
+r.register('service-categories', views.ServiceCategoryView, basename='service-category')
 r.register('services', views.ServiceView, basename='service')
 r.register('users', views.UserView, basename='user')
 
