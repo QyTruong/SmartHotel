@@ -46,6 +46,15 @@ class RoomView(viewsets.ViewSet, generics.ListAPIView):
 
         return queryset
 
+    @action(methods=['patch'], url_path="update-status", detail=True)
+    def update_room_status(self, request, pk):
+        room = self.get_object()
+        s = RoomSerializer(room, data=request.data, partial=True)
+        s.is_valid(raise_exception=True)
+        s.save()
+
+        return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
+
 class ServiceView(viewsets.ViewSet, generics.ListAPIView):
     queryset = Room.objects.filter(active=True)
     serializer_class = RoomSerializer
@@ -63,10 +72,8 @@ class UserView(viewsets.ViewSet, generics.CreateAPIView):
         user = request.user
 
         if request.method.__eq__('PATCH'):
-            for key, value in request.data.items():
-                if key in ['first_name', 'last_name', 'email']:
-                    setattr(user, key, value)
-
+            s = UserSerializer(user, data=request.data, partial=True)
+            s.is_valid(raise_exception=True)
             user.save()
 
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
