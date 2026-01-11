@@ -2,11 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
 
-class PaymentMethod(models.IntegerChoices):
-    CASH = 1
-    CARD = 2
-    WALLET = 3
-
 class User(AbstractUser):
     avatar = CloudinaryField(null=True)
     email = models.EmailField()
@@ -32,7 +27,6 @@ class Room(BaseModel):
     image = CloudinaryField(null=True)
     description = models.TextField(null=True)
     room_category = models.ForeignKey(RoomCategory, related_name='rooms', on_delete=models.CASCADE)
-    is_available = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -53,31 +47,49 @@ class Service(BaseModel):
     def __str__(self):
         return self.name
 
+
+class Booking(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "PENDING"
+        CONFIRMED = "CONFIRMED"
+        CANCELED = "CANCELED"
+
+    user = models.ForeignKey(User, on_delete=models.RESTRICT)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
 class Receipt(BaseModel):
-    amount = models.DecimalField(decimal_places=2, max_digits=12, null=True)
-    payment_method = models.IntegerField(choices=PaymentMethod.choices, null=True)
+    class PaymentStatus(models.TextChoices):
+        UNPAID = "UNPAID"
+        PAID = "PAID"
+
+    class PaymentMethod(models.TextChoices):
+        E_WALLET = "E_WALLET"
+        CASH = "CASH"
+        CARD = "CARD"
+
+    booking = models.OneToOneField(Booking, on_delete=models.RESTRICT)
+    total_amount = models.DecimalField(decimal_places=2, max_digits=12)
+    payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.UNPAID)
+    payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
 
 
 class BookingRoom(BaseModel):
-    room = models.ForeignKey(Room, on_delete=models.RESTRICT)
-    receipt = models.ForeignKey(Receipt, on_delete=models.RESTRICT,null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    room = models.ForeignKey(Room, related_name='booking_rooms', on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, related_name='booking_rooms',on_delete=models.CASCADE)
 
     price_per_night = models.DecimalField(decimal_places=2, max_digits=12)
-    start_date = models.DateField(null=True)
-    end_date = models.DateField(null=True)
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
 
 
 class BookingService(BaseModel):
-    service = models.ForeignKey(Service, on_delete=models.RESTRICT)
-    receipt = models.ForeignKey(Receipt, on_delete=models.RESTRICT, null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    service = models.ForeignKey(Service, related_name='booking_services', on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, related_name='booking_services', on_delete=models.CASCADE)
 
-    quantity = models.IntegerField(default=0)
     unit_price = models.DecimalField(decimal_places=2, max_digits=12)
-    start_date = models.DateField(null=True)
-    end_date = models.DateField(null=True)
-    check_in = models.DateTimeField(null=True)
-    check_out = models.DateTimeField(null=True)
+    quantity = models.IntegerField(default=1)
+    check_in = models.DateTimeField(null=True, blank=True)
+

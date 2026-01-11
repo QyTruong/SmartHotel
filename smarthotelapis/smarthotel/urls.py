@@ -8,6 +8,7 @@ r.register('rooms', views.RoomView, basename='room')
 r.register('service-categories', views.ServiceCategoryView, basename='service-category')
 r.register('services', views.ServiceView, basename='service')
 r.register('users', views.UserView, basename='user')
+r.register('bookings', views.BookingView, basename='booking')
 
 urlpatterns = [
     path('', include(r.urls)),
