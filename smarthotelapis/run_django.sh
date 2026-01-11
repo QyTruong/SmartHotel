@@ -7,8 +7,8 @@ python manage.py createsuperuser --no-input || echo "SuperUser đã tồn tại!
 
 echo "=== Khởi tạo dữ liệu mẫu ==="
 python manage.py shell  <<EOF
-from smarthotel.models import Category
-c1, _ = Category.objects.get_or_create(name='vip')
-c2, _ = Category.objects.get_or_create(name='standard')
+from smarthotel.models import RoomCategory
+c1, _ = RoomCategory.objects.get_or_create(name='Mot giuong', price=1500000)
+c2, _ = RoomCategory.objects.get_or_create(name='Hai giuong', price=2000000)
 
 EOF
