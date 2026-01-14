@@ -5,7 +5,6 @@ from cloudinary.models import CloudinaryField
 class User(AbstractUser):
     avatar = CloudinaryField(null=True)
     email = models.EmailField()
-    phone = models.CharField(max_length=20)
 
 class BaseModel(models.Model):
     active = models.BooleanField(default=True)
@@ -70,6 +69,7 @@ class Receipt(BaseModel):
 
     booking = models.OneToOneField(Booking, on_delete=models.RESTRICT)
     total_amount = models.DecimalField(decimal_places=2, max_digits=12)
+    payment_date = models.DateTimeField(null=True, blank=True)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.UNPAID)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
 

@@ -1,4 +1,7 @@
 from datetime import timedelta
+
+from django.db import transaction
+from django.db.models import Q
 from rest_framework import serializers
 from django.utils import timezone
 from smarthotel.models import Room, RoomCategory, Service, User, BookingRoom, ServiceCategory, BookingService, Booking, \
@@ -104,29 +107,58 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ['id', 'booking_rooms', 'booking_services']
+        fields = ['id', 'booking_rooms', 'booking_services', 'status', 'expires_at']
 
+    @transaction.atomic
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user
 
-        booking_rooms_data = validated_data.pop('booking_rooms')
-        booking_services_data = validated_data.pop('booking_services')
+        booking_rooms = validated_data.pop('booking_rooms')
+        booking_services = validated_data.pop('booking_services')
 
         booking = Booking.objects.create(user=user, expires_at=timezone.now() + timedelta(minutes=30))
 
         room_total_amount = 0
-        for br in booking_rooms_data:
-            nights = (br['end_date'] - br['start_date']).days
-            room_total_amount += br['price_per_night'] * nights
+        for br in booking_rooms:
+            start_date = br['start_date']
+            end_date = br['end_date']
+            price_per_night = br['price_per_night']
+            room = br['room']
+
+
+            if start_date > end_date:
+                raise serializers.ValidationError({'error': 'Ngày bắt đầu phải trước ngày kết thúc'})
+
+            conflict = BookingRoom.objects.filter(
+                room=room, booking__status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED],
+                start_date__lte=end_date, end_date__gte=start_date
+            ).exists()
+
+            if conflict:
+                raise serializers.ValidationError({'error':
+                    f'Phòng {room.name} đã được đặt trong khoảng thời gian {start_date} - {end_date}, '
+                    f'Vui lòng đặt phòng hoặc ngày khác'
+                })
+
+            nights = (end_date - start_date).days
+            room_total_amount += price_per_night * nights
 
             BookingRoom.objects.create(booking=booking, **br)
             
         service_total_amount = 0
-        for bs in booking_services_data:
-            service_total_amount += bs['unit_price'] * bs['quantity']
+        for bs in booking_services:
+            unit_price = bs['unit_price']
+            quantity = bs['quantity']
+            service = bs['service']
+
+            if quantity <= 0:
+                raise serializers.ValidationError(f'Vui lòng biết số lượng dịch vụ {service.name} bạn muốn đặt')
+
+            service_total_amount += unit_price * quantity
             
             BookingService.objects.create(booking=booking, **bs)
+
             
         total_amount = room_total_amount + service_total_amount
 

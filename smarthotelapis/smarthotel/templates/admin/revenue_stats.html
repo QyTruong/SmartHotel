@@ -1,0 +1,102 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+
+{% load static %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+<div class="report-wrapper">
+    <div class="report-table">
+        <table>
+            <tr>
+                <th>Mã phòng</th>
+                <th>Tên phòng</th>
+                <th>Doanh thu</th>
+            </tr>
+            {% for r in room_revenue %}
+            <tr>
+                <td>{{ r.room__id }}</td>
+                <td>{{ r.room__name }}</td>
+                <td>{{ r.total_revenue }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="report-chart">
+        <h1>Thống kê báo cáo doanh thu</h1>
+        <form>
+            <div class="form-group mb-3">
+                <label for="kw">Theo tên phòng:</label>
+                <input type="text" class="form-control" name="kw" id="kw" placeholder="Nhập tên phòng...">
+            </div>
+            <div class="form-group mb-3">
+                <label for="from_date">Theo ngày bắt đầu:</label>
+                <input type="date" class="form-control" name="from_date" id="from_date">
+            </div>
+            <div class="form-group mb-3">
+                <label for="to_date">Theo ngày kết thúc:</label>
+                <input type="date" class="form-control" name="to_date" id="to_date">
+            </div>
+            <input type="submit" value="Thống kê" class="btn btn-primary">
+        </form>
+
+        <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let labels = []
+    let data = []
+    let colors = []
+    let borderColors = []
+    let r, g, b
+
+    {% for r in room_revenue %}
+        labels.push('{{ r.room__name }}')
+        data.push(Number('{{ r.total_revenue }}'))
+
+        r = Math.floor(Math.random() * 255)
+        g = Math.floor(Math.random() * 255)
+        b = Math.floor(Math.random() * 255)
+
+        colors.push(`rgba(${r}, ${g}, ${b}, 0.5)`)
+        borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`)
+    {% endfor %}
+
+    window.onload = function() {
+        const ctx = document.getElementById('myChart').getContext('2d')
+        loadChart(ctx, labels, data, 'bar', colors, borderColors)
+    }
+
+    function loadChart(ctx, labels, data, type, colors, borderColors) {
+        new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu theo phòng',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        })
+    }
+</script>
+
+{% endblock %}
