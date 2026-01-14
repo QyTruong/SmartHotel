@@ -1,8 +1,3 @@
-from os import times
-from urllib import request
-
-from django.contrib.auth import authenticate
-from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets, generics, parsers, permissions, status
 from rest_framework.decorators import action
@@ -10,7 +5,7 @@ from rest_framework.response import Response
 from .models import RoomCategory, Room, BookingRoom, User, Service, BookingService, Booking, Receipt
 from .paginators import ServicePagination, RoomPagination
 from .serializers import RoomCategorySerializer, RoomSerializer, UserSerializer, ServiceCategorySerializer, \
-    ServiceSerializer, BookingRoomSerializer, BookingDetailSerializer, BookingSerializer
+    ServiceSerializer, BookingRoomSerializer, BookingSerializer
 from .momo import create_momo_payment
 
 
@@ -70,7 +65,6 @@ class ServiceView(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = ServicePagination
 
 
-
 class UserView(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
@@ -92,11 +86,6 @@ class BookingView(viewsets.ViewSet, generics.CreateAPIView):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.action in ['retrieve', 'destroy']:
-            return BookingDetailSerializer
-        return BookingSerializer
-
     def get_queryset(self):
         return Booking.objects.filter(user=self.request.user)
 
@@ -109,16 +98,24 @@ class BookingView(viewsets.ViewSet, generics.CreateAPIView):
         })
 
 
-    def destroy(self, request, *args, **kwargs):
-        booking = self.get_object()
+    @action(methods=['delete'], url_path='cancel', detail=True)
+    def cancel(self, request, pk):
+        booking = Booking.objects.filter(pk=pk).first()
 
-        if booking.status != Booking.Status.PENDING:
+        if not booking:
+            return Response({'error': 'Đăng ký không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
+
+        if booking.status == Booking.Status.CANCELED:
+            return Response({'error': 'Đăng ký đã được hủy trước đó'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if booking.status == Booking.Status.CONFIRMED:
             return Response({'error': 'Không thể hủy đăng ký đã được thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
+
 
         booking.status = Booking.Status.CANCELED
         booking.save()
 
-        return Response({'message': 'Đã xóa đăng ký thành công'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Hủy đăng ký thành công'}, status=status.HTTP_204_NO_CONTENT)
 
 
     @action(methods=['post'], detail=True, url_path='pay')
@@ -128,20 +125,19 @@ class BookingView(viewsets.ViewSet, generics.CreateAPIView):
         if not booking:
             return Response({'error': 'Đăng ký không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
 
+        if booking.status == Booking.Status.CONFIRMED:
+            return Response({'error': 'Đăng ký này đã được thanh toán, không thể thanh toán nữa'}, status=status.HTTP_400_BAD_REQUEST)
+
         if booking.status == Booking.Status.CANCELED:
-            return Response({'error': 'Đăng ký này đã được thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Đăng ký này đã bị hủy, không thể thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if booking.expires_at < timezone.now():
-            booking.status = Booking.Status.CANCELED
-            booking.save()
-
-            return Response({'error': 'Đăng ký đã hết hạn để thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
 
         receipt = booking.receipt
         payment_method = request.data.get('payment_method')
 
         receipt.payment_method = payment_method
         receipt.payment_status = Receipt.PaymentStatus.PAID
+        receipt.payment_date = timezone.now()
         receipt.save()
 
         booking.status = Booking.Status.CONFIRMED
