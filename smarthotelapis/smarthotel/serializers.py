@@ -107,7 +107,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ['id', 'booking_rooms', 'booking_services', 'status', 'expires_at']
+        fields = ['id', 'booking_rooms', 'booking_services', 'status']
 
     @transaction.atomic
     def create(self, validated_data):
@@ -117,7 +117,7 @@ class BookingSerializer(serializers.ModelSerializer):
         booking_rooms = validated_data.pop('booking_rooms')
         booking_services = validated_data.pop('booking_services')
 
-        booking = Booking.objects.create(user=user, expires_at=timezone.now() + timedelta(minutes=30))
+        booking = Booking.objects.create(user=user)
 
         room_total_amount = 0
         for br in booking_rooms:
@@ -131,7 +131,7 @@ class BookingSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'error': 'Ngày bắt đầu phải trước ngày kết thúc'})
 
             conflict = BookingRoom.objects.filter(
-                room=room, booking__status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED],
+                room=room, booking__status__in=[Booking.Status.CONFIRMED],
                 start_date__lte=end_date, end_date__gte=start_date
             ).exists()
 
@@ -166,13 +166,6 @@ class BookingSerializer(serializers.ModelSerializer):
 
         return booking
 
-class BookingDetailSerializer(serializers.ModelSerializer):
-    booking_rooms = BookingRoomSerializer(many=True, read_only=True)
-    booking_services = BookingServiceSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Booking
-        fields = ['id', 'booking_rooms', 'booking_services', 'status', 'expires_at']
 
 
 
