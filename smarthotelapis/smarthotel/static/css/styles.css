@@ -1,0 +1,17 @@
+.report-wrapper {
+    display: flex;
+}
+
+.report-table {
+    width: 30%;
+}
+
+.report-chart {
+    width: 70%;
+    height: 500px;
+}
+
+#myChart {
+    width: 100% !important;
+    height: 100% !important;
+}
