@@ -85,12 +85,9 @@ class BookingView(viewsets.ViewSet, generics.CreateAPIView):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return Booking.objects.filter(user=self.request.user)
-
     @action(methods=['get'], url_path='my-bookings', detail=False)
     def get_bookings(self, request):
-        queryset = self.get_queryset()
+        queryset = Booking.objects.filter(user=self.request.user)
         return Response({
             'count': queryset.count(),
             'bookings': BookingSerializer(queryset, many=True).data
@@ -99,7 +96,7 @@ class BookingView(viewsets.ViewSet, generics.CreateAPIView):
 
     @action(methods=['delete'], url_path='cancel', detail=True)
     def cancel(self, request, pk):
-        booking = Booking.objects.filter(pk=pk).first()
+        booking = Booking.objects.filter(user=request.user, pk=pk).first()
 
         if not booking:
             return Response({'error': 'Đăng ký không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
