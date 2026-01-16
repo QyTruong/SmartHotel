@@ -40,8 +40,6 @@ class ServiceSerializer(ImageSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    groups = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'username', 'password', 'avatar', 'email']
