@@ -1,52 +1,39 @@
-{% extends 'admin/base_site.html' %}
+{% extends 'admin/base_stats.html' %}
 {% block content %}
+<h1 class="text-center">Thống kê báo cáo doanh thu</h1>
 
-{% load static %}
-{% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-{% endblock %}
-
-<div class="report-wrapper">
-    <div class="report-table">
+<h2>Thống kê doanh thu theo tháng</h2>
+<div class="row">
+    <div class="col-md-4 col-xs-12">
         <table>
             <tr>
-                <th>Mã phòng</th>
-                <th>Tên phòng</th>
+                <th>Tháng</th>
                 <th>Doanh thu</th>
             </tr>
-            {% for r in room_revenue %}
+            {% for r in revenue_by_month %}
             <tr>
-                <td>{{ r.room__id }}</td>
-                <td>{{ r.room__name }}</td>
+                <td>{{ r.month }}</td>
                 <td>{{ r.total_revenue }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    <div class="report-chart">
-        <h1>Thống kê báo cáo doanh thu</h1>
-        <form>
+    <div class="col-md-8 col-xs-12 row">
+        <div class="col-md-4 col-xs-6">
+            <form>
             <div class="form-group mb-3">
-                <label for="kw">Theo tên phòng:</label>
-                <input type="text" class="form-control" name="kw" id="kw" placeholder="Nhập tên phòng...">
+                <label for="year">Theo năm:</label>
+                <input type="number" min="2000" class="form-control" name="year" id="year" placeholder="Nhập năm...">
             </div>
-            <div class="form-group mb-3">
-                <label for="from_date">Theo ngày bắt đầu:</label>
-                <input type="date" class="form-control" name="from_date" id="from_date">
-            </div>
-            <div class="form-group mb-3">
-                <label for="to_date">Theo ngày kết thúc:</label>
-                <input type="date" class="form-control" name="to_date" id="to_date">
-            </div>
+
             <input type="submit" value="Thống kê" class="btn btn-primary">
         </form>
-
-        <canvas id="myChart"></canvas>
+        </div>
+        <div class="col-md-4 col-xs-6">
+            <canvas id="myChart"></canvas>
+        </div>
     </div>
 </div>
-
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -57,8 +44,8 @@
     let borderColors = []
     let r, g, b
 
-    {% for r in room_revenue %}
-        labels.push('{{ r.room__name }}')
+    {% for r in revenue_by_month %}
+        labels.push('{{ r.month }}')
         data.push(Number('{{ r.total_revenue }}'))
 
         r = Math.floor(Math.random() * 255)

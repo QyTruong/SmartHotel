@@ -1,9 +1,5 @@
-from datetime import timedelta
-
 from django.db import transaction
-from django.db.models import Q
 from rest_framework import serializers
-from django.utils import timezone
 from smarthotel.models import Room, RoomCategory, Service, User, BookingRoom, ServiceCategory, BookingService, Booking, \
     Receipt
 
@@ -48,15 +44,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username', 'password', 'avatar', 'email', 'groups']
+        fields = ['id', 'first_name', 'last_name', 'username', 'password', 'avatar', 'email']
         extra_kwargs = {
             'password': {
                 'write_only': True
             }
         }
-
-    def get_groups(self, user):
-        return list(user.groups.values_list('name', flat=True))
 
     def create(self, validated_data):
         user = User(**validated_data)
@@ -67,7 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         keys = set(validated_data.keys())
-        if keys - {'first_name', 'last_name', 'email', 'phone'}:
+        if keys - {'first_name', 'last_name', 'email'}:
             raise serializers.ValidationError({'error': 'Các trường không hợp lệ'})
 
         return super().update(instance, validated_data)

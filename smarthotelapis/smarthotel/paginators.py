@@ -1,3 +1,4 @@
+from django.core.paginator import Page
 from rest_framework.pagination import PageNumberPagination
 
 class RoomPagination(PageNumberPagination):
