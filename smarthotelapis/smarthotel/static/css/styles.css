@@ -7,11 +7,6 @@
 }
 
 .report-chart {
-    width: 70%;
-    height: 500px;
-}
-
-#myChart {
-    width: 100% !important;
-    height: 100% !important;
+    width: 30%;
+    height: 300px;
 }

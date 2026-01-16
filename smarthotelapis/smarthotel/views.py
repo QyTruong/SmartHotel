@@ -2,11 +2,10 @@ from django.utils import timezone
 from rest_framework import viewsets, generics, parsers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import RoomCategory, Room, BookingRoom, User, Service, BookingService, Booking, Receipt
+from .models import RoomCategory, Room, BookingRoom, User, Service, Booking, Receipt
 from .paginators import ServicePagination, RoomPagination
 from .serializers import RoomCategorySerializer, RoomSerializer, UserSerializer, ServiceCategorySerializer, \
-    ServiceSerializer, BookingRoomSerializer, BookingSerializer
-from .momo import create_momo_payment
+    ServiceSerializer, BookingSerializer
 
 
 class RoomCategoryView(viewsets.ViewSet, generics.ListAPIView):
