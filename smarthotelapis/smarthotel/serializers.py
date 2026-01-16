@@ -132,7 +132,7 @@ class BookingSerializer(serializers.ModelSerializer):
                     f'Vui lòng đặt phòng hoặc ngày khác'
                 })
 
-            nights = (end_date - start_date).days
+            nights = (end_date - start_date).days + 1
             room_total_amount += price_per_night * nights
 
             BookingRoom.objects.create(booking=booking, **br)

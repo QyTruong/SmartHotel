@@ -21,10 +21,9 @@ class MyAdminSite(admin.AdminSite):
         return url_stats_list + super().get_urls()
 
     def occupancy_rate_stats_view(self, request):
-        room_count = Room.objects.all().count()
 
 
-        return TemplateResponse(request, 'admin/occupancy_rate_stats.html', {'room_count': room_count})
+        return TemplateResponse(request, 'admin/occupancy_rate_stats.html')
 
     def revenue_stats_view(self, request):
         year = request.GET.get('year')
